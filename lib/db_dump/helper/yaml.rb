@@ -1,26 +1,19 @@
-require 'rubygems'
 require 'yaml'
 require 'active_record'
-require 'rails/railtie'
-require 'yaml_db/rake_tasks'
-require 'yaml_db/version'
-require 'yaml_db/serialization_helper'
+require 'db_dump/serialization_helper'
 
-module YamlDb
-  module Helper
-    def self.loader
-      Load
-    end
-
-    def self.dumper
-      Dump
-    end
-
-    def self.extension
-      "yml"
-    end
+module DbDump::Helper::Yaml
+  def self.loader
+    Load
   end
 
+  def self.dumper
+    Dump
+  end
+
+  def self.extension
+    "yml"
+  end
 
   module Utils
     def self.chunk_records(records)
@@ -29,7 +22,6 @@ module YamlDb
       yaml.sub!('- - -', '  - -')
       yaml
     end
-
   end
 
   class Dump < SerializationHelper::Dump
@@ -58,20 +50,18 @@ module YamlDb
 
   class Load < SerializationHelper::Load
     def self.load_documents(io, truncate = true)
-        YAML.load_stream(io) do |ydoc|
-          ydoc.keys.each do |table_name|
-            next if ydoc[table_name].nil?
-            load_table(table_name, ydoc[table_name], truncate)
-          end
+      YAML.load_stream(io) do |ydoc|
+        ydoc.keys.each do |table_name|
+          next if ydoc[table_name].nil?
+          load_table(table_name, ydoc[table_name], truncate)
         end
+      end
     end
   end
 
   class Railtie < Rails::Railtie
     rake_tasks do
-      load File.expand_path('../tasks/yaml_db_tasks.rake',
-__FILE__)
+      load File.expand_path('../tasks/yaml_db_tasks.rake', __FILE__)
     end
   end
-
 end

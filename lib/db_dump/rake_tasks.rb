@@ -1,4 +1,7 @@
-module YamlDb
+module DbDump
+  DEFAULT_HELPER = DbDump::Helper::Yaml
+  DEFAULT_EXTENSION = DEFAULT_HELPER.extension
+
   module RakeTasks
     def self.data_dump_task
       SerializationHelper::Base.new(helper).dump(db_dump_data_file(helper.extension))
@@ -19,22 +22,21 @@ module YamlDb
     end
 
     private
+      def self.default_dir_name
+        Time.now.strftime('%FT%H%M%S')
+      end
 
-    def self.default_dir_name
-      Time.now.strftime('%FT%H%M%S')
-    end
+      def self.db_dump_data_file(extension = DEFAULT_EXTENSION)
+        "#{dump_dir}/data.#{extension}"
+      end
 
-    def self.db_dump_data_file(extension = 'yml')
-      "#{dump_dir}/data.#{extension}"
-    end
+      def self.dump_dir(dir = '')
+        "#{Rails.root}/db#{dir}"
+      end
 
-    def self.dump_dir(dir = '')
-      "#{Rails.root}/db#{dir}"
-    end
-
-    def self.helper
-      format_class = ENV['class'] || 'YamlDb::Helper'
-      format_class.constantize
-    end
+      def self.helper
+        format_class = ENV['class'] || DEFAULT_HELPER.to_s
+        format_class.constantize
+      end
   end
 end
